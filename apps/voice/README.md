@@ -14,6 +14,17 @@
 
 ```
 {
+    "info": "new model trained",
+    "model": "model_20181008-203057"
+}
+```
+
+## Query
+
+```curl -XPOST localhost:5005/parse -d '{"q":"play the radio", "project":"voice_hack"}'```
+
+```
+{
     "intent": {
         "name": "start_radio",
         "confidence": 0.9729545712471008
@@ -34,10 +45,6 @@
     "model": "model_20181008-201438"
 }
 ```
-
-## Query
-
-```curl -XPOST localhost:5005/parse -d '{"q":"play the radio", "project":"voice_hack"}'```
 
 ## Postman
 
