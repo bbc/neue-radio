@@ -1,0 +1,18 @@
+language: "en"
+
+pipeline: "tensorflow_embedding"
+
+data: |
+  ## intent:start_radio
+  - play the radio
+  - play radio
+  - start radio
+  - start the radio
+  - play [radio one](station) 
+  - play [radio two](station) 
+  - play [one extra](station) 
+
+  ## intent:stop_radio
+  - stop the radio
+  - kill the radio
+  - exit radio

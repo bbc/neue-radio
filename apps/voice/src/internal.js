@@ -18,7 +18,7 @@ const main = async () => {
       const type = payload.params.type;
       const transcript = payload.params.transcript;
       if (type === 'full') {
-        rasa.getIntent(transcript).then((intent) => {
+        rasa.getIntent(transcript, 'radio', 'model_20181008-163752').then((intent) => {
           console.log('Need to call publish', intent);
           if (intent === 'start_radio') {
             websocket.publish({ topic: `radio/command/hls` });
