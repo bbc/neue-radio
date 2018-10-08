@@ -5,13 +5,13 @@ class Rasa {
         this.nluService = 'http://localhost:5005/';
     }
 
-    getIntent(query, project, model) {
-        console.log('Rasa:getIntent', query);
+    getIntent(query, project) {
+        console.log('Rasa:getIntent query', query);
+        console.log('Rasa:getIntent project', project);
         return new Promise((resolve, reject) => {
             axios.post(this.nluService + 'parse', {
                 'q': query,
-                'project': project,
-                'model': model
+                'project': project
             })
                 .then(function (response) {
                     console.log('rasa request loaded', response.data.intent.name);
