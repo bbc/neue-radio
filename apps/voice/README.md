@@ -1,5 +1,20 @@
 ### Neue Radio Voice
 
+## App 
+
+To run the demo voice app. Go to the following URL.
+
+```http://localhost:5000/voice/```
+
+Try saying:
+
+> start the radio
+
+or
+
+> stop the radio
+
+
 ## Setup Rasa
 
 ```cd apps/voice```
