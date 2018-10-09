@@ -1,31 +1,34 @@
 ### Neue Radio Voice
 
-## App 
 
-To run the demo voice app. Go to the following URL.
+A simple example of JavaScript Web Speech API recognition event utterance being passed on to a local instance of Rasa NLU for extracting intent.
 
-```http://localhost:5000/voice/```
+## Demo
+
+[http://localhost:5000/voice/](http://localhost:5000/voice/)
 
 Try saying:
 
-> start the radio
+> Start the radio
 
 or
 
-> stop the radio
+> Stop the radio
 
 
-## Setup Rasa
+## Setup
 
-```cd apps/voice```
-
-```docker build -t rasa_server .```
-
-```docker run --name rasa_server_ins -d -p 5005:5000 rasa_server```
+```
+cd apps/voice
+docker build -t rasa_server .
+docker run --name rasa_server_ins -d -p 5005:5000 rasa_server
+```
 
 ## Train
 
 ```curl -XPOST -H "Content-Type: application/x-yml" localhost:5005/train?project=voice_hack --data-binary @assets/model.yml```
+
+Returns JSON
 
 ```
 {
@@ -37,6 +40,8 @@ or
 ## Query
 
 ```curl -XPOST localhost:5005/parse -d '{"q":"play the radio", "project":"voice_hack"}'```
+
+Returns JSON
 
 ```
 {
@@ -63,4 +68,4 @@ or
 
 ## Postman
 
-```https://documenter.getpostman.com/view/924347/RWgozeGu```
+Other useful API calls can be found [here](https://documenter.getpostman.com/view/924347/RWgozeGu)
