@@ -8,6 +8,64 @@
   <title>Internal App</title>
 </head>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+<script type="text/javascript">
+
+  // TOOO check page supports the web speech audio
+
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onstart = function () {
+    console.log('recognition start');
+  };
+
+  recognition.onerror = function (event) {
+    console.log('recognition onerror');
+  };
+
+  recognition.onend = function () {
+    console.log('recognition onend');
+    recognition.start();
+  };
+
+</script>
+
+<script>
+  //
+  const ws = createWebsocket({ debug: true });
+  console.log('%cHello!', 'color:blue;font-weight:bold');
+  //
+  // Subscrive to all websocket events, from everyting
+  ws.subscribe(/.*/, function ({ topic, payload }) {
+    console.log('Received a WebSocket message', { topic, payload });
+  });
+
+  // Helper to send a WebSocket command to the internal page
+  // for this app
+  const sendCommand = (topic, payload = {}) => {
+    ws.publish({ topic: `voice/command/${topic}`, payload });
+  };
+
+  recognition.onresult = function (event) {
+    console.log('recognition onresult');
+    var interim_transcript = '';
+    currentEvent = event.results[event.results.length - 1];
+    if (currentEvent.isFinal) {
+      console.log('event ', currentEvent[0].transcript);
+      sendCommand('recognition', { params: { transcript: currentEvent[0].transcript, type: 'full' } })
+    }
+  };
+
+  $(document).ready(function () {
+    recognition.lang = 'en-GB';
+    recognition.start();
+  });
+
+</script>
+
 <body>
   <h1>Internal App</h1>
   <audio class="media"></audio>
