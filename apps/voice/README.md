@@ -26,7 +26,7 @@ docker run --name rasa_server_ins -d -p 5005:5000 rasa_server
 
 ## Train
 
-```curl -XPOST -H "Content-Type: application/x-yml" localhost:5005/train?project=voice_hack --data-binary @assets/model.yml```
+```curl -XPOST -H "Content-Type: application/x-yml" localhost:5005/train?project=voice_hack --data-binary @src/assets/model.yml```
 
 [assets/model.yml](src/assets/model.yml)
 
