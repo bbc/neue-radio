@@ -83,7 +83,7 @@ rm -rf %{buildroot}
 
 # Copy systemd config to /usr/lib/systemd/system/${name}.service
 mkdir -p %{buildroot}/usr/lib/systemd/system/
-cp %{_builddir}/systemd/%{name}.service %{buildroot}/usr/lib/systemd/system/
+cp %{_builddir}/cosmos/systemd/%{name}.service %{buildroot}/usr/lib/systemd/system/
 
 # Install dependencies to /usr/lib/${name}
 mkdir -p %{buildroot}/usr/lib/%{name}
