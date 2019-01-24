@@ -40,6 +40,7 @@ Requires: python-pip
 Requires: python-virtualenv
 
 Requires: nginx
+Requires: nodejs >= 4.0.0
 
 # -----------------------------------------------------------------------------
 # Apache TLS - Access control
@@ -96,6 +97,7 @@ cp -r %{_builddir}/apps %{buildroot}/usr/lib/%{name}/
 cp -r %{_builddir}/deployment %{buildroot}/usr/lib/%{name}/
 cp -r %{_builddir}/services %{buildroot}/usr/lib/%{name}/
 cp -r %{_builddir}/shared %{buildroot}/usr/lib/%{name}/
+cp -r %{_builddir}/package.json %{buildroot}/usr/lib/%{name}/
 
 # Copy bake scripts to /etc/bake-scripts/${name}
 mkdir -p %{buildroot}%{_sysconfdir}/bake-scripts
