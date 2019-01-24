@@ -90,7 +90,10 @@ mkdir -p %{buildroot}/usr/lib/%{name}
 # PYTHONDONTWRITEBYTECODE=1 CFLAGS="$RPM_OPT_FLAGS" pip install --install-option='--install-platlib=$base/lib/python' --target %{buildroot}/usr/lib/%{name} --no-deps ../ext/*
 
 # Copy application files to /usr/lib/${name}/${name}
-cp -r %{_builddir}/cosmos/config %{buildroot}/usr/lib/%{name}/
+cp -r %{_builddir}/cosmos/apps %{buildroot}/usr/lib/%{name}/
+cp -r %{_builddir}/cosmos/deployment %{buildroot}/usr/lib/%{name}/
+cp -r %{_builddir}/cosmos/services %{buildroot}/usr/lib/%{name}/
+cp -r %{_builddir}/cosmos/shared %{buildroot}/usr/lib/%{name}/
 cp -r %{_builddir}/cosmos/bin %{buildroot}/usr/
 
 # Copy bake scripts to /etc/bake-scripts/${name}
