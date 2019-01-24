@@ -14,7 +14,7 @@ source:
 	# Bundle up all the source code into a single .tar.gz file, used in
 	# combination with the .spec file to create the RPM(s)
 	mkdir -p SOURCES
-	tar --exclude ".gitignore" --exclude "*.py[co]" --exclude "node_modules" -czf SOURCES/src.tar.gz infrastructure bake-scripts systemd
+	tar --exclude ".gitignore" --exclude "*.py[co]" --exclude "node_modules" -czf SOURCES/src.tar.gz cosmos apps deployment docs services shared
 
 release: source
 	# Clean out any old RPMs from previous builds
