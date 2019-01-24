@@ -1,0 +1,301 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Main stack for the Neue Radio application",
+    "Parameters": {
+        "BastionAccessSecurityGroup": {
+            "Description": "The security group allowing access from the bastions",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "CnameEntry": {
+            "Description": "The cname entry for the component",
+            "Type": "String"
+        },
+        "DomainNameBase": {
+            "Description": "Base domain name (ending with a '.') under which new DNS entries are added",
+            "Type": "String"
+        },
+        "Environment": {
+            "AllowedValues": [
+                "int",
+                "test",
+                "stage",
+                "live"
+            ],
+            "Description": "The name of the Cosmos environment: int, test, stage or live",
+            "Type": "String"
+        },
+        "ImageId": {
+            "Default": "ami-9398d3e0",
+            "Description": "The AMI used by this component, defaults to base centos 7",
+            "Type": "AWS::EC2::Image::Id"
+        },
+        "InstanceType": {
+            "Default": "t2.micro",
+            "Description": "EC2 instance type to be used",
+            "Type": "String"
+        },
+        "KeyName": {
+            "Description": "Name of existing EC2 key-pair to enable SSH access to the created instances",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "MaxSize": {
+            "Default": "2",
+            "Description": "Maximum number of instances to spin-up",
+            "Type": "String"
+        },
+        "MinSize": {
+            "Default": "2",
+            "Description": "Minimum number of instances to spin-up",
+            "Type": "String"
+        },
+        "PrivateSubnets": {
+            "Description": "Comma separated list of subnets to position the ASG in",
+            "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "PublicSubnets": {
+            "Description": "Comma separated list of subnets to position the ELBs in",
+            "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "UpdateMaxBatchSize": {
+            "Default": "1",
+            "Description": "The maximum number of instances to be killed at one time during an ASG update",
+            "Type": "String"
+        },
+        "UpdateMinInService": {
+            "Default": "0",
+            "Description": "The minimum number of instances to be killed at one time during an ASG update",
+            "Type": "String"
+        },
+        "UpdatePauseTime": {
+            "Default": "PT0S",
+            "Description": "The time to wait between new instances coming online and the next batch being killed during an ASG update.",
+            "Type": "String"
+        },
+        "VpcId": {
+            "Description": "The Id of the VPC to attach the environment to",
+            "Type": "AWS::EC2::VPC::Id"
+        }
+    },
+    "Resources": {
+        "ASGSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Security group for the ASG",
+                "SecurityGroupEgress": [],
+                "SecurityGroupIngress": [
+                    {
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "ELBSecurityGroup"
+                        },
+                        "ToPort": "80"
+                    },
+                    {
+                        "FromPort": "443",
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "ELBSecurityGroup"
+                        },
+                        "ToPort": "443"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VpcId"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "ComponentAutoScalingGroup": {
+            "Properties": {
+                "LaunchConfigurationName": {
+                    "Ref": "ComponentLaunchConfiguration"
+                },
+                "LoadBalancerNames": [
+                    {
+                        "Ref": "ElasticLoadBalancer"
+                    }
+                ],
+                "MaxSize": {
+                    "Ref": "MaxSize"
+                },
+                "MinSize": {
+                    "Ref": "MinSize"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "PrivateSubnets"
+                }
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MaxBatchSize": {
+                        "Ref": "UpdateMaxBatchSize"
+                    },
+                    "MinInstancesInService": {
+                        "Ref": "UpdateMinInService"
+                    },
+                    "PauseTime": {
+                        "Ref": "UpdatePauseTime"
+                    }
+                }
+            }
+        },
+        "ComponentDNS": {
+            "Properties": {
+                "Comment": "CNAME redirect the component ELB",
+                "HostedZoneName": {
+                    "Ref": "DomainNameBase"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        ".",
+                        [
+                            {
+                                "Ref": "CnameEntry"
+                            },
+                            {
+                                "Ref": "Environment"
+                            },
+                            {
+                                "Ref": "DomainNameBase"
+                            }
+                        ]
+                    ]
+                },
+                "ResourceRecords": [
+                    {
+                        "Fn::GetAtt": [
+                            "ElasticLoadBalancer",
+                            "DNSName"
+                        ]
+                    }
+                ],
+                "TTL": "60",
+                "Type": "CNAME"
+            },
+            "Type": "AWS::Route53::RecordSet"
+        },
+        "ComponentInstanceProfile": {
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "ComponentRole"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
+        },
+        "ComponentLaunchConfiguration": {
+            "Properties": {
+                "EbsOptimized": "false",
+                "IamInstanceProfile": {
+                    "Ref": "ComponentInstanceProfile"
+                },
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "InstanceMonitoring": "false",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "BastionAccessSecurityGroup"
+                    },
+                    {
+                        "Ref": "ASGSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "ComponentRole": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Path": "/"
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "ELBSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Only allow public traffic on 80",
+                "SecurityGroupEgress": [],
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "ToPort": "80"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "443",
+                        "IpProtocol": "tcp",
+                        "ToPort": "443"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VpcId"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "ElasticLoadBalancer": {
+            "Properties": {
+                "ConnectionDrainingPolicy": {
+                    "Enabled": true,
+                    "Timeout": 300
+                },
+                "CrossZone": "true",
+                "HealthCheck": {
+                    "HealthyThreshold": "3",
+                    "Interval": "15",
+                    "Target": "HTTP:80/status",
+                    "Timeout": "10",
+                    "UnhealthyThreshold": "3"
+                },
+                "Listeners": [
+                    {
+                        "InstancePort": "80",
+                        "InstanceProtocol": "tcp",
+                        "LoadBalancerPort": "80",
+                        "Protocol": "tcp"
+                    },
+                    {
+                        "InstancePort": "443",
+                        "InstanceProtocol": "tcp",
+                        "LoadBalancerPort": "443",
+                        "Protocol": "tcp"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "ELBSecurityGroup"
+                    }
+                ],
+                "Subnets": {
+                    "Ref": "PublicSubnets"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer"
+        }
+    }
+}

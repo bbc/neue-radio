@@ -1,0 +1,13 @@
+[Unit]
+Description=The Next Episode Prototype 
+
+[Service]
+User=irfs-tne-prototype
+Group=irfs-tne-prototype
+WorkingDirectory=/usr/lib/tne-prototype
+ExecStart=/usr/bin/tne-prototype
+StandardOutput=syslog
+SyslogIdentifier=tne-prototype
+
+[Install]
+WantedBy=multi-user.target
